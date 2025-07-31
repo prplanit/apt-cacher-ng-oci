@@ -25,19 +25,34 @@ build-image:
     echo "Installing dependencies (bash git)..."
     apk add --no-cache bash git                                                                                                                             >/dev/null
     # - ls -l "$DOCKER_CERT_PATH"  # Debug: Show certs
-  script:  |
-    echo "Building Docker image $DOCKER_IMAGE:$DOCKER_TAG..."
-    docker build -t "$DOCKER_IMAGE:$DOCKER_TAG" .                                                                                                           >/dev/null
-    echo "Logging into the Docker Hub (docker.io)..."
-    echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin                                                                   >/dev/null
-    echo "Uploading $DOCKER_IMAGE:$DOCKER_TAG to the Docker Hub (docker.io)..."
-    docker push "$DOCKER_IMAGE:$DOCKER_TAG"                                                                                                                 >/dev/null
-    if docker manifest inspect "$DOCKER_IMAGE:$DOCKER_TAG" > /dev/null 2>&1; then
-        echo "✅ Image $DOCKER_IMAGE:$DOCKER_TAG successfully pushed and verified."
+  script: |
+    set -e
+
+    tag_and_push() {
+      local tag=$1
+      echo "🔧 Tagging image as $DOCKER_IMAGE:$tag"
+      [ "$tag" != "$DOCKER_TAG" ] && docker tag "$DOCKER_IMAGE:$DOCKER_TAG" "$DOCKER_IMAGE:$tag"
+
+      echo "📤 Pushing $DOCKER_IMAGE:$tag to Docker Hub..."
+      docker push "$DOCKER_IMAGE:$tag" >/dev/null
+
+      echo "🔍 Verifying $DOCKER_IMAGE:$tag is available..."
+      if docker manifest inspect "$DOCKER_IMAGE:$tag" > /dev/null 2>&1; then
+        echo "✅ $DOCKER_IMAGE:$tag successfully pushed and verified."
       else
-        echo "❌ Image push failed or is not available yet on the registry."
+        echo "❌ $DOCKER_IMAGE:$tag push failed or is not yet visible on the registry."
         exit 1
       fi
+    }
+
+    echo "🐳 Building Docker image $DOCKER_IMAGE:$DOCKER_TAG..."
+    docker build -t "$DOCKER_IMAGE:$DOCKER_TAG" . >/dev/null
+
+    echo "🔐 Logging into Docker Hub..."
+    echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin >/dev/null
+
+    tag_and_push "$DOCKER_TAG"
+    tag_and_push "latest"
   rules:
     - if: $CI_COMMIT_TAG
 
