@@ -1,6 +1,6 @@
 ![Latest Release](https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci/-/badges/release.svg) ![Latest Release Status](https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci/-/raw/main/assets/badge-release-status.svg)
 
-# apt-cacher-ng-oci — PrPlanIT Edition 🌎
+# 📦 apt-cacher-ng-oci
 A caching proxy for Debian-based package downloads (e.g., APT). This image is ideal for improving speed and reducing bandwidth in CI pipelines or homelab networks that frequently install packages from Debian, Ubuntu, or other APT-based distributions. It also includes built-in logging support, making it easier to monitor usage and troubleshoot caching behavior.
 
 This container is inspired by other work such as `sameersbn/docker-apt-cacher-ng`. In poking around I struggled to find an image with working logs. So I decided to make one. 😁
