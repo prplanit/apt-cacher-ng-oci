@@ -13,7 +13,7 @@ This version includes:
 
 ---
 
-> Maintained by [PrPlanIT](https://prplanit.com) — Real world results for your real world expectations.
+> Maintained by SoFMeRight for [PrPlanIT](https://precisionplanit.com) — Real world results for your real world expectations.
 
 ---
 
