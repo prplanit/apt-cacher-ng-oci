@@ -1,4 +1,4 @@
-![Latest Release](https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci/-/badges/release.svg) ![Latest Release Status](https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci/-/raw/main/assets/badge-release-status.svg)
+![Latest Release](https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci/-/badges/release.svg) ![Latest Release Status](https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci/-/raw/main/assets/badge-release-status.svg) [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T41IT163)
 
 # 📦 apt-cacher-ng-oci
 A caching proxy for Debian-based package downloads (e.g., APT). This image is ideal for improving speed and reducing bandwidth in CI pipelines or homelab networks that frequently install packages from Debian, Ubuntu, or other APT-based distributions. It also includes built-in logging support, making it easier to monitor usage and troubleshoot caching behavior.
