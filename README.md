@@ -39,8 +39,6 @@ This version includes:
 
 `Dockerfile` for a containerized version of [Apt-Cacher NG](https://www.unix-ag.uni-kl.de/~bloch/acng/), the legendary caching proxy for Linux package archives (primarily Debian-based).
 
-This is not just another fork — it’s a reimplementation by [Kai (@SoFMeRight)](https://github.com/sofmeright), with better operational behavior and sane logs.
-
 ## Contributing
 
 This is maintained by a solo DevOps freak. You can:
