@@ -4,18 +4,25 @@ set -e
 CACHE_DIR="${APT_CACHER_NG_CACHE_DIR}"
 LOG_DIR="${APT_CACHER_NG_LOG_DIR}"
 
-# Ensure required directories exist
+# Ensure required directories exist (remove duplicate)
 mkdir -p /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
 chown -R "$APT_CACHER_NG_USER:$APT_CACHER_NG_USER" /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
+
+# Runtime config overrides
+CONFIG_FILE="/etc/apt-cacher-ng/acng.conf"
 
 # Optional: allow override of PassThroughPattern at runtime
 if [[ -n "${PASS_THROUGH_PATTERN}" ]]; then
-  sed -i "s|^PassThroughPattern:.*|PassThroughPattern: ${PASS_THROUGH_PATTERN}|" /etc/apt-cacher-ng/acng.conf
+  sed -i "s|^PassThroughPattern:.*|PassThroughPattern: ${PASS_THROUGH_PATTERN}|" "$CONFIG_FILE"
 fi
 
-# Ensure required directories exist
-mkdir -p /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
-chown -R "$APT_CACHER_NG_USER:$APT_CACHER_NG_USER" /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
+# Runtime concurrency overrides
+if [[ -n "${MAX_THREADS}" ]]; then
+    sed -i "s|^MaxStandbyConThreads:.*|MaxStandbyConThreads: ${MAX_THREADS}|" "$CONFIG_FILE"
+fi
+if [[ -n "${NETWORK_TIMEOUT}" ]]; then
+    sed -i "s|^NetworkTimeout:.*|NetworkTimeout: ${NETWORK_TIMEOUT}|" "$CONFIG_FILE"
+fi
 
 # Pre-create log files to prevent race conditions
 touch "$LOG_DIR/apt-cacher.log" "$LOG_DIR/error.log"
