@@ -1,4 +1,4 @@
-dockerfileFROM ubuntu:24.04
+FROM ubuntu:24.04
 
 LABEL maintainer="sofmeright@gmail.com"
 
