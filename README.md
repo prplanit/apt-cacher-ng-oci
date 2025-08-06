@@ -124,22 +124,35 @@ mkdir -p /srv/apt-cacher-ng/{cache,log}
 
 ## Docker Compose
 ```
-version: '3'
-
+# version: '3'
 services:
   apt-cacher-ng:
-    image: prplanit/apt-cacher-ng-oci:latest
-    container_name: apt-cacher-ng-oci
+    container_name: apt-cacher-ng
+    restart: always
+    image: prplanit/apt-cacher-ng-oci:3.7.4-v0.1
+    init: true
     ports:
       - "3142:3142"
-    volumes:
-      - ./cache:/var/cache/apt-cacher-ng
-      - ./log:/var/log/apt-cacher-ng
-    restart: unless-stopped
     environment:
-      APT_CACHER_NG_USER: apt-cacher-ng
-      APT_CACHER_NG_CACHE_DIR: /var/cache/apt-cacher-ng
-      APT_CACHER_NG_LOG_DIR: /var/log/apt-cacher-ng
+      - MAX_THREADS=25              # For 11 concurrent machines
+      - NETWORK_TIMEOUT=90          # Higher timeout for concurrent requests
+    volumes:
+      # This is a rare case where the path is actually intentionally redick.
+      - /mnt/operation/PrecisionPlanIT/Servers/Gringotts/docker/apt-cacher-ng:/var/cache/apt-cacher-ng
+      # Add log volume for monitoring (optional)
+      - /mnt/operation/PrecisionPlanIT/Servers/Gringotts/docker/apt-cacher-ng/logs:/var/log/apt-cacher-ng
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 ```
 
 Start with:
