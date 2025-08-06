@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+dockerfileFROM ubuntu:24.04
 
 LABEL maintainer="sofmeright@gmail.com"
 
@@ -15,23 +15,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       apt-cacher-ng ca-certificates gosu tini wget \
  && rm -rf /var/lib/apt/lists/*
 
-# Patch config: set ForeGround mode, passthrough pattern, and concurrency settings
+# Patch config: set ForeGround mode, passthrough pattern, and valid concurrency settings
 RUN sed -i 's|# ForeGround: .*|ForeGround: 1|' /etc/apt-cacher-ng/acng.conf && \
     sed -i 's|# LogDir: .*|LogDir: /var/log/apt-cacher-ng|' /etc/apt-cacher-ng/acng.conf && \
     # Handle PassThroughPattern
     (grep -q '^PassThroughPattern:' /etc/apt-cacher-ng/acng.conf && \
       sed -i "s|^PassThroughPattern:.*|PassThroughPattern: ${PASS_THROUGH_PATTERN}|" /etc/apt-cacher-ng/acng.conf || \
       echo "PassThroughPattern: ${PASS_THROUGH_PATTERN}" >> /etc/apt-cacher-ng/acng.conf) && \
-    # Add concurrency optimizations
-    sed -i 's|# MaxConPerIP: .*|MaxConPerIP: 0|' /etc/apt-cacher-ng/acng.conf && \
+    # Add concurrency optimizations based on the config file
     sed -i 's|# MaxStandbyConThreads: .*|MaxStandbyConThreads: 20|' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's|# MaxConThreads: .*|MaxConThreads: -1|' /etc/apt-cacher-ng/acng.conf && \
     sed -i 's|# NetworkTimeout: .*|NetworkTimeout: 60|' /etc/apt-cacher-ng/acng.conf && \
     sed -i 's|# VfileUseRangeOps: .*|VfileUseRangeOps: 1|' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's|# ReuseConnections: .*|ReuseConnections: 1|' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's|# PipelineDepth: .*|PipelineDepth: 10|' /etc/apt-cacher-ng/acng.conf && \
     # Add settings if they don't exist
-    grep -q '^MaxConPerIP:' /etc/apt-cacher-ng/acng.conf || echo "MaxConPerIP: 0" >> /etc/apt-cacher-ng/acng.conf && \
     grep -q '^MaxStandbyConThreads:' /etc/apt-cacher-ng/acng.conf || echo "MaxStandbyConThreads: 20" >> /etc/apt-cacher-ng/acng.conf && \
+    grep -q '^MaxConThreads:' /etc/apt-cacher-ng/acng.conf || echo "MaxConThreads: -1" >> /etc/apt-cacher-ng/acng.conf && \
     grep -q '^VfileUseRangeOps:' /etc/apt-cacher-ng/acng.conf || echo "VfileUseRangeOps: 1" >> /etc/apt-cacher-ng/acng.conf && \
-    grep -q '^NetworkTimeout:' /etc/apt-cacher-ng/acng.conf || echo "NetworkTimeout: 60" >> /etc/apt-cacher-ng/acng.conf
+    grep -q '^NetworkTimeout:' /etc/apt-cacher-ng/acng.conf || echo "NetworkTimeout: 60" >> /etc/apt-cacher-ng/acng.conf && \
+    grep -q '^ReuseConnections:' /etc/apt-cacher-ng/acng.conf || echo "ReuseConnections: 1" >> /etc/apt-cacher-ng/acng.conf && \
+    grep -q '^PipelineDepth:' /etc/apt-cacher-ng/acng.conf || echo "PipelineDepth: 10" >> /etc/apt-cacher-ng/acng.conf
 
 COPY entrypoint.sh /sbin/entrypoint.sh
 RUN chmod +x /sbin/entrypoint.sh

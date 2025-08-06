@@ -4,7 +4,7 @@ set -e
 CACHE_DIR="${APT_CACHER_NG_CACHE_DIR}"
 LOG_DIR="${APT_CACHER_NG_LOG_DIR}"
 
-# Ensure required directories exist (remove duplicate)
+# Ensure required directories exist
 mkdir -p /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
 chown -R "$APT_CACHER_NG_USER:$APT_CACHER_NG_USER" /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
 
@@ -16,7 +16,7 @@ if [[ -n "${PASS_THROUGH_PATTERN}" ]]; then
   sed -i "s|^PassThroughPattern:.*|PassThroughPattern: ${PASS_THROUGH_PATTERN}|" "$CONFIG_FILE"
 fi
 
-# Runtime concurrency overrides
+# Runtime concurrency overrides (only valid settings from the config)
 if [[ -n "${MAX_THREADS}" ]]; then
     sed -i "s|^MaxStandbyConThreads:.*|MaxStandbyConThreads: ${MAX_THREADS}|" "$CONFIG_FILE"
 fi
