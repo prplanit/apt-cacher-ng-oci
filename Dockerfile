@@ -6,19 +6,32 @@ ENV DEBIAN_FRONTEND=noninteractive \
     APT_CACHER_NG_CACHE_DIR=/var/cache/apt-cacher-ng \
     APT_CACHER_NG_LOG_DIR=/var/log/apt-cacher-ng \
     APT_CACHER_NG_USER=apt-cacher-ng \
-    PASS_THROUGH_PATTERN='.*'
+    PASS_THROUGH_PATTERN='.*' \
+    MAX_THREADS=20 \
+    NETWORK_TIMEOUT=60
 
 # Install tini and apt-cacher-ng and gosu
 RUN apt-get update && apt-get install -y --no-install-recommends \
       apt-cacher-ng ca-certificates gosu tini wget \
  && rm -rf /var/lib/apt/lists/*
 
-# Patch config: set ForeGround mode and passthrough pattern
+# Patch config: set ForeGround mode, passthrough pattern, and concurrency settings
 RUN sed -i 's|# ForeGround: .*|ForeGround: 1|' /etc/apt-cacher-ng/acng.conf && \
     sed -i 's|# LogDir: .*|LogDir: /var/log/apt-cacher-ng|' /etc/apt-cacher-ng/acng.conf && \
-    grep -q '^PassThroughPattern:' /etc/apt-cacher-ng/acng.conf && \
+    # Handle PassThroughPattern
+    (grep -q '^PassThroughPattern:' /etc/apt-cacher-ng/acng.conf && \
       sed -i "s|^PassThroughPattern:.*|PassThroughPattern: ${PASS_THROUGH_PATTERN}|" /etc/apt-cacher-ng/acng.conf || \
-      echo "PassThroughPattern: ${PASS_THROUGH_PATTERN}" >> /etc/apt-cacher-ng/acng.conf
+      echo "PassThroughPattern: ${PASS_THROUGH_PATTERN}" >> /etc/apt-cacher-ng/acng.conf) && \
+    # Add concurrency optimizations
+    sed -i 's|# MaxConPerIP: .*|MaxConPerIP: 0|' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's|# MaxStandbyConThreads: .*|MaxStandbyConThreads: 20|' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's|# NetworkTimeout: .*|NetworkTimeout: 60|' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's|# VfileUseRangeOps: .*|VfileUseRangeOps: 1|' /etc/apt-cacher-ng/acng.conf && \
+    # Add settings if they don't exist
+    grep -q '^MaxConPerIP:' /etc/apt-cacher-ng/acng.conf || echo "MaxConPerIP: 0" >> /etc/apt-cacher-ng/acng.conf && \
+    grep -q '^MaxStandbyConThreads:' /etc/apt-cacher-ng/acng.conf || echo "MaxStandbyConThreads: 20" >> /etc/apt-cacher-ng/acng.conf && \
+    grep -q '^VfileUseRangeOps:' /etc/apt-cacher-ng/acng.conf || echo "VfileUseRangeOps: 1" >> /etc/apt-cacher-ng/acng.conf && \
+    grep -q '^NetworkTimeout:' /etc/apt-cacher-ng/acng.conf || echo "NetworkTimeout: 60" >> /etc/apt-cacher-ng/acng.conf
 
 COPY entrypoint.sh /sbin/entrypoint.sh
 RUN chmod +x /sbin/entrypoint.sh
