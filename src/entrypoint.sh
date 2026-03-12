@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 CACHE_DIR="${APT_CACHER_NG_CACHE_DIR}"
@@ -8,21 +8,18 @@ LOG_DIR="${APT_CACHER_NG_LOG_DIR}"
 mkdir -p /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
 chown -R "$APT_CACHER_NG_USER:$APT_CACHER_NG_USER" /run/apt-cacher-ng "$CACHE_DIR" "$LOG_DIR"
 
-# Runtime config overrides
-CONFIG_FILE="/etc/apt-cacher-ng/acng.conf"
-
-# Optional: allow override of PassThroughPattern at runtime
-if [[ -n "${PASS_THROUGH_PATTERN}" ]]; then
-  sed -i "s|^PassThroughPattern:.*|PassThroughPattern: ${PASS_THROUGH_PATTERN}|" "$CONFIG_FILE"
-fi
-
-# Runtime concurrency overrides (only valid settings from the config)
-if [[ -n "${MAX_THREADS}" ]]; then
-    sed -i "s|^MaxStandbyConThreads:.*|MaxStandbyConThreads: ${MAX_THREADS}|" "$CONFIG_FILE"
-fi
-if [[ -n "${NETWORK_TIMEOUT}" ]]; then
-    sed -i "s|^NetworkTimeout:.*|NetworkTimeout: ${NETWORK_TIMEOUT}|" "$CONFIG_FILE"
-fi
+# Runtime config overrides — rewrite the override file with current env values
+printf '%s\n' \
+    "ForeGround: 1" \
+    "LogDir: ${LOG_DIR}" \
+    "PassThroughPattern: ${PASS_THROUGH_PATTERN}" \
+    "MaxStandbyConThreads: ${MAX_THREADS}" \
+    "NetworkTimeout: ${NETWORK_TIMEOUT}" \
+    "MaxConThreads: -1" \
+    "VfileUseRangeOps: 1" \
+    "ReuseConnections: 1" \
+    "PipelineDepth: 10" \
+    > /etc/apt-cacher-ng/zz_overrides.conf
 
 # Pre-create log files to prevent race conditions
 touch "$LOG_DIR/apt-cacher.log" "$LOG_DIR/error.log"
@@ -31,12 +28,10 @@ chown "$APT_CACHER_NG_USER:$APT_CACHER_NG_USER" "$LOG_DIR"/*.log
 # Start apt-cacher-ng in foreground as proper user
 gosu "$APT_CACHER_NG_USER" /usr/sbin/apt-cacher-ng -c /etc/apt-cacher-ng ForeGround=1 &
 
-# Wait for log files to appear (gracefully)
-LOG_FILES=("$LOG_DIR/apt-cacher.log" "$LOG_DIR/error.log")
-for file in "${LOG_FILES[@]}"; do
-  echo "Waiting for log file $file to appear..."
+# Wait for log files to appear
+for file in "$LOG_DIR/apt-cacher.log" "$LOG_DIR/error.log"; do
   while [ ! -f "$file" ]; do sleep 0.5; done
 done
 
-# Stream logs to stdout 💖
+# Stream logs to stdout
 exec tail -F "$LOG_DIR"/apt-cacher.log "$LOG_DIR"/error.log
