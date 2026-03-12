@@ -1,13 +1,13 @@
 FROM docker.io/library/debian:trixie-slim
 
-LABEL maintainer="SoFMeRight <sofmeright@gmail.com>" \
-    org.opencontainers.image.title="apt-cacher-ng-oci" \
+LABEL maintainer="HomeLabHD <homelabhelp@gmail.com>" \
+    org.opencontainers.image.title="apt-cacher-ng" \
     org.opencontainers.image.description="A caching proxy for Debian-based package downloads — fast APT installs in CI and homelab." \
-    org.opencontainers.image.source="https://github.com/prplanit/apt-cacher-ng-oci" \
-    org.opencontainers.image.url="https://hub.docker.com/r/prplanit/apt-cacher-ng-oci" \
-    org.opencontainers.image.documentation="https://github.com/prplanit/apt-cacher-ng-oci#readme" \
+    org.opencontainers.image.source="https://github.com/HomeLabHD/apt-cacher-ng" \
+    org.opencontainers.image.url="https://hub.docker.com/r/hlhd/apt-cacher-ng" \
+    org.opencontainers.image.documentation="https://github.com/HomeLabHD/apt-cacher-ng#readme" \
     org.opencontainers.image.licenses="BSD-4-Clause" \
-    org.opencontainers.image.vendor="PrecisionPlanIT"
+    org.opencontainers.image.vendor="HomeLabHD"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     APT_CACHER_NG_VERSION=3.7.5-1 \
