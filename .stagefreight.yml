@@ -13,8 +13,8 @@ sources:
 
 policies:
   git_tags:
-    stable: "^v?\\d+\\.\\d+\\.\\d+$"
-    prerelease: "^v?\\d+\\.\\d+\\.\\d+-.+"
+    stable: "^\\d+\\.\\d+\\.\\d+-\\d+-v\\d+$"
+    prerelease: "^\\d+\\.\\d+\\.\\d+-\\d+-v\\d+-.+"
   branches:
     main: "^main$"
 

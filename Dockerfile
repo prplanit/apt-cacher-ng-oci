@@ -10,6 +10,7 @@ LABEL maintainer="SoFMeRight <sofmeright@gmail.com>" \
     org.opencontainers.image.vendor="PrecisionPlanIT"
 
 ENV DEBIAN_FRONTEND=noninteractive \
+    APT_CACHER_NG_VERSION=3.7.5-1 \
     APT_CACHER_NG_CACHE_DIR=/var/cache/apt-cacher-ng \
     APT_CACHER_NG_LOG_DIR=/var/log/apt-cacher-ng \
     APT_CACHER_NG_USER=apt-cacher-ng \
@@ -19,7 +20,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Install tini and apt-cacher-ng and gosu
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      apt-cacher-ng ca-certificates gosu tini wget \
+      apt-cacher-ng="${APT_CACHER_NG_VERSION}" ca-certificates gosu tini wget \
  && rm -rf /var/lib/apt/lists/*
 
 # Override defaults — last value wins, no need to patch acng.conf
