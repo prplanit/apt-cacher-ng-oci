@@ -10,6 +10,14 @@ docker run --name apt-cacher-ng --init -d --restart=always \
   docker.io/prplanit/apt-cacher-ng-oci:latest
 ```
 
+### Command-line Arguments
+
+Custom arguments are passed directly to apt-cacher-ng:
+
+```bash
+docker run --rm -it docker.io/prplanit/apt-cacher-ng-oci:latest -h
+```
+
 ## Docker Compose
 
 Copy or reference the [docker-compose.yaml](docker-compose.yaml) in this directory:

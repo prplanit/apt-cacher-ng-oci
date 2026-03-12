@@ -1,22 +1,9 @@
-# Usage
+# Documentation
 
-## Run Locally
-
-```bash
-docker run --name apt-cacher-ng --init -d --restart=always \
-  -p 3142:3142 \
-  -v /srv/apt-cacher-ng/cache:/var/cache/apt-cacher-ng \
-  -v /srv/apt-cacher-ng/log:/var/log/apt-cacher-ng \
-  docker.io/prplanit/apt-cacher-ng-oci:latest
-```
-
-### Command-line Arguments
-
-Custom arguments are passed directly to apt-cacher-ng:
-
-```bash
-docker run --rm -it docker.io/prplanit/apt-cacher-ng-oci:latest -h
-```
+| Guide | Description |
+|-------|-------------|
+| [Docker](docker/) | Docker run, Compose, and building from source |
+| [Kubernetes](k8s/) | Pod and Service manifests |
 
 ## Client Configuration
 
@@ -35,52 +22,6 @@ RUN echo 'Acquire::HTTP::Proxy "http://172.17.0.1:3142";' >> /etc/apt/apt.conf.d
  && echo 'Acquire::HTTPS::Proxy "false";' >> /etc/apt/apt.conf.d/01proxy
 ```
 
-## Docker Compose
-
-```yaml
-services:
-  apt-cacher-ng:
-    container_name: apt-cacher-ng
-    restart: always
-    image: docker.io/prplanit/apt-cacher-ng-oci:latest
-    init: true
-    ports:
-      - "3142:3142"
-    environment:
-      - MAX_THREADS=25
-      - NETWORK_TIMEOUT=90
-    volumes:
-      - /srv/apt-cacher-ng/cache:/var/cache/apt-cacher-ng
-      - /srv/apt-cacher-ng/log:/var/log/apt-cacher-ng
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '2.0'
-        reservations:
-          memory: 512M
-          cpus: '0.5'
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-```
-
-## Persistence
-
-Cache and logs should persist across restarts:
-
-```bash
-mkdir -p /srv/apt-cacher-ng/{cache,log}
-```
-
-### Volumes
-
-| Mount Point | Purpose |
-|-------------|---------|
-| `/var/cache/apt-cacher-ng` | Package cache |
-| `/var/log/apt-cacher-ng` | Access and error logs |
-
 ## Environment Variables
 
 | Variable | Default | Description |
@@ -91,6 +32,19 @@ mkdir -p /srv/apt-cacher-ng/{cache,log}
 | `PASS_THROUGH_PATTERN` | `.*` | Regex for pass-through requests |
 | `MAX_THREADS` | `20` | Max standby connection threads |
 | `NETWORK_TIMEOUT` | `60` | Network timeout in seconds |
+
+## Volumes
+
+| Mount Point | Purpose |
+|-------------|---------|
+| `/var/cache/apt-cacher-ng` | Package cache |
+| `/var/log/apt-cacher-ng` | Access and error logs |
+
+Cache and logs should persist across restarts:
+
+```bash
+mkdir -p /srv/apt-cacher-ng/{cache,log}
+```
 
 ## Logs
 
