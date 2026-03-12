@@ -222,7 +222,7 @@ narrator:
         placement:
           between: ["<!-- sf:image:start -->", "<!-- sf:image:end -->"]
           mode: replace
-        shield: "badge/Docker-prplanit%2Fapt--cacher--ng--oci-2496ED?logo=docker&logoColor=white"
+        shield: "badge/Docker-{var:org}%2F{var:repo}-2496ED?logo=docker&logoColor=white"
         link: "https://hub.docker.com/r/{var:org}/{var:repo}"
 
       - id: image.pulls
