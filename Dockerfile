@@ -44,7 +44,7 @@ RUN sed -i 's|# ForeGround: .*|ForeGround: 1|' /etc/apt-cacher-ng/acng.conf && \
     grep -q '^ReuseConnections:' /etc/apt-cacher-ng/acng.conf || echo "ReuseConnections: 1" >> /etc/apt-cacher-ng/acng.conf && \
     grep -q '^PipelineDepth:' /etc/apt-cacher-ng/acng.conf || echo "PipelineDepth: 10" >> /etc/apt-cacher-ng/acng.conf
 
-COPY entrypoint.sh /sbin/entrypoint.sh
+COPY src/entrypoint.sh /sbin/entrypoint.sh
 RUN chmod +x /sbin/entrypoint.sh
 
 EXPOSE 3142/tcp
