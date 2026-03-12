@@ -10,7 +10,7 @@ docker run --name apt-cacher-ng -d --restart=always \
   --cap-drop=ALL \
   --cap-add=CHOWN --cap-add=SETUID --cap-add=SETGID --cap-add=DAC_OVERRIDE \
   --security-opt=no-new-privileges:true \
-  docker.io/prplanit/apt-cacher-ng-oci:latest
+  docker.io/hlhd/apt-cacher-ng:latest
 ```
 
 ### Command-line Arguments
@@ -18,7 +18,7 @@ docker run --name apt-cacher-ng -d --restart=always \
 Custom arguments are passed directly to apt-cacher-ng:
 
 ```bash
-docker run --rm -it docker.io/prplanit/apt-cacher-ng-oci:latest -h
+docker run --rm -it docker.io/hlhd/apt-cacher-ng:latest -h
 ```
 
 ## Docker Compose
@@ -32,6 +32,6 @@ docker compose up -d
 ## Building from Source
 
 ```bash
-git clone https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci && cd apt-cacher-ng-oci
-docker build -t prplanit/apt-cacher-ng-oci .
+git clone https://github.com/HomeLabHD/apt-cacher-ng && cd apt-cacher-ng
+docker build -t hlhd/apt-cacher-ng .
 ```

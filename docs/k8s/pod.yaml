@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
     - name: apt-cacher-ng
-      image: docker.io/prplanit/apt-cacher-ng-oci:latest
+      image: docker.io/hlhd/apt-cacher-ng:latest
       imagePullPolicy: IfNotPresent
       resources:
         limits:

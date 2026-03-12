@@ -21,7 +21,7 @@ policies:
     main: "^main$"
 
 builds:
-  - id: apt-cacher-ng-oci
+  - id: apt-cacher-ng
     kind: docker
     platforms: [linux/amd64]
 
@@ -29,7 +29,7 @@ targets:
   # ── Docker Hub: stable releases ─────────────────────────────────
   - id: dockerhub-stable
     kind: registry
-    build: apt-cacher-ng-oci
+    build: apt-cacher-ng
     url: docker.io
     provider: docker
     path: "{var:org}/{var:repo}"
@@ -42,7 +42,7 @@ targets:
   # ── Docker Hub: pre-releases ────────────────────────────────────
   - id: dockerhub-prerelease
     kind: registry
-    build: apt-cacher-ng-oci
+    build: apt-cacher-ng
     url: docker.io
     provider: docker
     path: "{var:org}/{var:repo}"
@@ -54,7 +54,7 @@ targets:
   # ── Docker Hub: dev builds on every commit ──────────────────────
   - id: dockerhub-dev
     kind: registry
-    build: apt-cacher-ng-oci
+    build: apt-cacher-ng
     url: docker.io
     provider: docker
     path: "{var:org}/{var:repo}"

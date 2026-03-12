@@ -69,7 +69,7 @@ Run with the `-e` flag:
 ```bash
 docker run --rm -it \
   -v /srv/apt-cacher-ng/cache:/var/cache/apt-cacher-ng \
-  docker.io/prplanit/apt-cacher-ng-oci:latest -e
+  docker.io/hlhd/apt-cacher-ng:latest -e
 ```
 
 Or via the web UI at `http://localhost:3142/acng-report.html`.
@@ -77,7 +77,7 @@ Or via the web UI at `http://localhost:3142/acng-report.html`.
 ### Upgrading
 
 ```bash
-docker pull docker.io/prplanit/apt-cacher-ng-oci:latest
+docker pull docker.io/hlhd/apt-cacher-ng:latest
 docker stop apt-cacher-ng && docker rm apt-cacher-ng
 ```
 

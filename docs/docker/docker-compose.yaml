@@ -1,7 +1,7 @@
 services:
   apt-cacher-ng:
     restart: always
-    image: docker.io/prplanit/apt-cacher-ng-oci:latest
+    image: docker.io/hlhd/apt-cacher-ng:latest
     ports:
       - "3142:3142"
     volumes:

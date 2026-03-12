@@ -1,4 +1,4 @@
-# 📦 apt-cacher-ng-oci
+# 📦 apt-cacher-ng
 
 A caching proxy for Debian-based package downloads (e.g., APT). This image is ideal for improving speed and reducing bandwidth in CI pipelines or homelab networks that frequently install packages from Debian, Ubuntu, or other APT-based distributions. Includes built-in logging support for monitoring usage and troubleshooting caching behavior.
 
@@ -6,7 +6,7 @@ A caching proxy for Debian-based package downloads (e.g., APT). This image is id
 [![badge/GitHub-source-181717?logo=github](https://img.shields.io/badge/GitHub-source-181717?logo=github)](https://github.com/HomeLabHD/apt-cacher-ng) [![badge/GitLab-source-FC6D26?logo=gitlab](https://img.shields.io/badge/GitLab-source-FC6D26?logo=gitlab)](https://gitlab.prplanit.com/PrPlanIT/homelabhd/apt-cacher-ng) [![Last Commit](https://img.shields.io/github/last-commit/HomeLabHD/apt-cacher-ng)](https://github.com/HomeLabHD/apt-cacher-ng/commits) [![Open Issues](https://img.shields.io/github/issues/HomeLabHD/apt-cacher-ng)](https://github.com/HomeLabHD/apt-cacher-ng/issues) ![github/issues-pr/HomeLabHD/apt--cacher--ng](https://img.shields.io/github/issues-pr/HomeLabHD/apt--cacher--ng) [![Contributors](https://img.shields.io/github/contributors/HomeLabHD/apt-cacher-ng)](https://github.com/HomeLabHD/apt-cacher-ng/graphs/contributors)
 <!-- sf:project:end -->
 <!-- sf:badges:start -->
-[![build](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/build.svg)](https://gitlab.prplanit.com/PrPlanIT/homelabhd/apt-cacher-ng/-/pipelines) [![license](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/license.svg)](https://metadata.ftp-master.debian.org/changelogs//main/a/apt-cacher-ng/apt-cacher-ng_3.7.5-1.1_copyright) [![release](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/release.svg)](https://github.com/HomeLabHD/apt-cacher-ng/releases) ![updated](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/updated.svg) [![badge/donate-FF5E5B?logo=ko-fi&logoColor=white](https://img.shields.io/badge/donate-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/T6T41IT163) [![badge/sponsor-EA4AAA?logo=githubsponsors&logoColor=white](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/HomeLabHD)
+[![build](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/build.svg)](https://gitlab.prplanit.com/PrPlanIT/homelabhd/apt-cacher-ng/-/pipelines) [![license](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/license.svg)](https://metadata.ftp-master.debian.org/changelogs//main/a/apt-cacher-ng/apt-cacher-ng_3.7.5-1.1_copyright) [![release](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/release.svg)](https://github.com/HomeLabHD/apt-cacher-ng/releases) ![updated](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/updated.svg) [![badge/donate-FF5E5B?logo=ko-fi&logoColor=white](https://img.shields.io/badge/donate-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/T6T41IT163) [![badge/sponsor-EA4AAA?logo=githubsponsors&logoColor=white](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/PrPlanIT)
 <!-- sf:badges:end -->
 <!-- sf:image:start -->
 [![badge/Docker-hlhd%2Fapt--cacher--ng-2496ED?logo=docker&logoColor=white](https://img.shields.io/badge/Docker-hlhd%2Fapt--cacher--ng-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/hlhd/apt-cacher-ng) [![pulls](https://raw.githubusercontent.com/HomeLabHD/apt-cacher-ng/main/.stagefreight/badges/pulls.svg)](https://hub.docker.com/r/hlhd/apt-cacher-ng)
@@ -36,16 +36,16 @@ A caching proxy for Debian-based package downloads (e.g., APT). This image is id
 
 ## Installation
 
-Pull the image from [Docker Hub](https://hub.docker.com/r/prplanit/apt-cacher-ng-oci) or build it yourself:
+Pull the image from [Docker Hub](https://hub.docker.com/r/hlhd/apt-cacher-ng) or build it yourself:
 
 ```bash
-docker pull docker.io/prplanit/apt-cacher-ng-oci:latest
+docker pull docker.io/hlhd/apt-cacher-ng:latest
 ```
 
 ```bash
-git clone https://gitlab.prplanit.com/precisionplanit/apt-cacher-ng-oci
-cd apt-cacher-ng-oci
-docker build -t prplanit/apt-cacher-ng-oci .
+git clone https://github.com/HomeLabHD/apt-cacher-ng
+cd apt-cacher-ng
+docker build -t hlhd/apt-cacher-ng .
 ```
 
 ## Contributing
