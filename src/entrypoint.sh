@@ -25,8 +25,8 @@ printf '%s\n' \
 touch "$LOG_DIR/apt-cacher.log" "$LOG_DIR/error.log"
 chown "$APT_CACHER_NG_USER:$APT_CACHER_NG_USER" "$LOG_DIR"/*.log
 
-# Start apt-cacher-ng in foreground as proper user
-gosu "$APT_CACHER_NG_USER" /usr/sbin/apt-cacher-ng -c /etc/apt-cacher-ng ForeGround=1 &
+# Start apt-cacher-ng in foreground as service user
+su -s /bin/sh -c '/usr/sbin/apt-cacher-ng -c /etc/apt-cacher-ng ForeGround=1' "$APT_CACHER_NG_USER" &
 
 # Wait for log files to appear
 for file in "$LOG_DIR/apt-cacher.log" "$LOG_DIR/error.log"; do

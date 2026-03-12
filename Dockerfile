@@ -18,9 +18,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     MAX_THREADS=20 \
     NETWORK_TIMEOUT=60
 
-# Install tini and apt-cacher-ng and gosu
+# Install apt-cacher-ng and runtime dependencies (no wget/curl/gosu — smaller attack surface)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      apt-cacher-ng="${APT_CACHER_NG_VERSION}" ca-certificates gosu tini wget \
+      apt-cacher-ng="${APT_CACHER_NG_VERSION}" ca-certificates tini \
  && rm -rf /var/lib/apt/lists/*
 
 # Override defaults — last value wins, no need to patch acng.conf
@@ -42,7 +42,7 @@ RUN chmod +x /sbin/entrypoint.sh
 EXPOSE 3142/tcp
 
 HEALTHCHECK --interval=10s --timeout=2s --retries=3 \
-    CMD wget -q -t1 -O /dev/null  http://localhost:3142/acng-report.html || exit 1
+    CMD grep -q ":0C46" /proc/net/tcp 2>/dev/null || exit 1
 
 ENTRYPOINT ["/usr/bin/tini", "-s", "--", "/sbin/entrypoint.sh"]
 CMD []
