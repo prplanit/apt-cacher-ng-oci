@@ -23,9 +23,9 @@ A caching proxy for Debian-based package downloads (e.g., APT). This image is id
 
 | Topic | |
 |-------|-|
-| [Usage](docs/Usage.md) | Running the image, client configuration, and maintenance |
+| [Usage](docs/README.md) | Running the image, client configuration, and maintenance |
 | [Docker](docs/docker/) | [docker-compose.yaml](docs/docker/docker-compose.yaml) |
-| [Kubernetes](docs/k8s/Kubernetes.md) | [pod.yaml](docs/k8s/pod.yaml) · [service.yaml](docs/k8s/service.yaml) |
+| [Kubernetes](docs/k8s/) | [pod.yaml](docs/k8s/pod.yaml) · [service.yaml](docs/k8s/service.yaml) |
 
 ---
 
