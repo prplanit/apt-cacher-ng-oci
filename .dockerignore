@@ -1,0 +1,10 @@
+.git
+.gitignore
+.gitlab-ci.yml
+.stagefreight
+.stagefreight.yml
+docs
+kubernetes
+docker-compose.yaml
+README.md
+LICENSE

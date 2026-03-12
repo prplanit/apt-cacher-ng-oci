@@ -1,245 +1,64 @@
 stages:
   - build
+  - security
+  - docs
   - release
 
 variables:
+  SF_IMAGE: "docker.jcr.pcfae.com/prplanit/stagefreight:latest-dev"
   DOCKER_HOST: "tcp://docker:2376"
   DOCKER_TLS_VERIFY: "1"
   DOCKER_CERT_PATH: "/certs/client"
-  DOCKER_IMAGE: "prplanit/apt-cacher-ng-oci"
-  DOCKER_TAG: "$CI_COMMIT_TAG"
-  GIT_TAG: "$CI_COMMIT_TAG"
-  GITLAB_DOMAIN: "https://gitlab.prplanit.com"
   DOCKER_TLS_CERTDIR: "/certs"
 
+# ── Build ────────────────────────────────────────────────────────
 build-image:
   stage: build
-  image: docker:24.0.5
+  image: "$SF_IMAGE"
   services:
-    - name: docker:24.0.5-dind
+    - name: docker:28.1.1-dind
       alias: docker
-  before_script:  |
-    echo "---------------------------------------------------------------------------"
-    echo "AntParade GitOps 🐜 - Preparing $CI_JOB_IMAGE image for build tasks"
-    echo "---------------------------------------------------------------------------"
-    echo "Installing dependencies (bash git)..."
-    apk add --no-cache bash git                                                                                                                             >/dev/null
-    # - ls -l "$DOCKER_CERT_PATH"  # Debug: Show certs
-  script: |
-    set -e
-
-    tag_and_push() {
-      local tag=$1
-      echo "🔧 Tagging image as $DOCKER_IMAGE:$tag"
-      [ "$tag" != "$DOCKER_TAG" ] && docker tag "$DOCKER_IMAGE:$DOCKER_TAG" "$DOCKER_IMAGE:$tag"
-
-      echo "📤 Pushing $DOCKER_IMAGE:$tag to Docker Hub..."
-      docker push "$DOCKER_IMAGE:$tag" >/dev/null
-
-      echo "🔍 Verifying $DOCKER_IMAGE:$tag is available..."
-      if docker manifest inspect "$DOCKER_IMAGE:$tag" > /dev/null 2>&1; then
-        echo "✅ $DOCKER_IMAGE:$tag successfully pushed and verified."
-      else
-        echo "❌ $DOCKER_IMAGE:$tag push failed or is not yet visible on the registry."
-        exit 1
-      fi
-    }
-
-    echo "🐳 Building Docker image $DOCKER_IMAGE:$DOCKER_TAG..."
-    docker build -t "$DOCKER_IMAGE:$DOCKER_TAG" . >/dev/null
-
-    echo "🔐 Logging into Docker Hub..."
-    echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin >/dev/null
-
-    tag_and_push "$DOCKER_TAG"
-    tag_and_push "latest"
+  script:
+    - stagefreight build --push
   rules:
     - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "main"
 
+# ── Security ─────────────────────────────────────────────────────
+security-scan:
+  stage: security
+  image: "$SF_IMAGE"
+  services:
+    - name: docker:28.1.1-dind
+      alias: docker
+  needs: [build-image]
+  script:
+    - stagefreight security scan docker.io/prplanit/apt-cacher-ng-oci
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# ── Docs ─────────────────────────────────────────────────────────
+docs-refresh:
+  stage: docs
+  image: "$SF_IMAGE"
+  services:
+    - name: docker:28.1.1-dind
+      alias: docker
+  needs: [build-image]
+  script:
+    - stagefreight narrator run --commit --push
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# ── Release ──────────────────────────────────────────────────────
 create-release:
-  before_script:  |
-    echo "---------------------------------------------------------------------------"
-    echo "AntParade GitOps 🐜 - Preparing $CI_JOB_IMAGE image for release creation tasks"
-    echo "---------------------------------------------------------------------------"
-    echo "Installing dependencies (bash curl jq)..."
-    apk add --no-cache bash curl jq                                                                                                                         >/dev/null
-  image: alpine:3.22.1
-  needs:
-    - job: generate_release_notes
-      artifacts: true
-  only:
-    - tags
-  script:  |
-    echo "Reading $DOCKER_HUB_USERNAME/$CI_PROJECT_NAME's changelog into memory..."
-    RELEASE_NOTES=$(cat release.md)
-
-    echo "Creating Gitlab release- $DOCKER_HUB_USERNAME/$CI_PROJECT_NAME:$CI_COMMIT_TAG..."
-    curl --silent --show-error --fail --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --request POST \
-      --form "name=Release $CI_COMMIT_TAG" \
-      --form "tag_name=$CI_COMMIT_TAG" \
-      --form "description=$RELEASE_NOTES" \
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases" || echo "Release might already exist"                                                               >/dev/null
-    echo "🧪 Validating GitLab release creation..."
-
-    RELEASE_RESPONSE=$(curl --silent --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases/$CI_COMMIT_TAG")                                                                                     >/dev/null
-
-    # Try to parse the tag name from the response to verify existence
-    RELEASE_TAG=$(echo "$RELEASE_RESPONSE" | jq -r '.tag_name // empty')                                                                                    >/dev/null
-
-    if [ "$RELEASE_TAG" = "$CI_COMMIT_TAG" ]; then
-        echo ""
-        echo "🎉 ✅ GitLab release created successfully!"
-        echo "    🔖 Tag: $RELEASE_TAG"
-        echo "    🔗 ${CI_PROJECT_URL}/-/releases/$RELEASE_TAG"
-      else
-        echo ""
-        echo "❌ GitLab release validation failed!"
-        echo "🧾 Response from API:"
-        echo "$RELEASE_RESPONSE"
-        exit 1
-      fi
-
-    DOCKER_IMAGE_LINK="https://hub.docker.com/r/$DOCKER_HUB_USERNAME/$CI_PROJECT_NAME/tags?page=1&name=$CI_COMMIT_TAG"
-
-    echo "Adding a link to $DOCKER_HUB_USERNAME/$CI_PROJECT_NAME:$CI_COMMIT_TAG via the Docker Hub on the generated Gitlab release page..."
-    curl --silent --show-error --fail --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-      --request POST \
-      --header "Content-Type: application/json" \
-      --data "{\"name\":\"Docker Image $CI_COMMIT_TAG\",\"url\":\"$DOCKER_IMAGE_LINK\",\"link_type\":\"other\"}" \
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases/$CI_COMMIT_TAG/assets/links"                                                                         >/dev/null
-      
-    echo "🧪 Validating GitLab release asset link..."
-
-    ASSET_LINKS=$(curl --silent --show-error --fail --silent --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases/$CI_COMMIT_TAG/assets/links")                                                                        >/dev/null
-
-    EXPECTED_LINK_NAME="Docker Image $CI_COMMIT_TAG"
-
-    LINK_FOUND=$(echo "$ASSET_LINKS" | jq -e --arg NAME "$EXPECTED_LINK_NAME" '.[] | select(.name == $NAME)' > /dev/null && echo "yes" || echo "no")        >/dev/null
-
-    if [ "$LINK_FOUND" = "yes" ]; then
-      echo ""
-      echo "🔗 ✅ Asset link '$EXPECTED_LINK_NAME' created successfully!"
-    else
-      echo ""
-      echo "❌ Asset link '$EXPECTED_LINK_NAME' not found!"
-      echo "🔍 Full asset links response:"
-      echo "$ASSET_LINKS"
-      exit 1
-    fi
   stage: release
-
-generate_release_notes:
-  artifacts:
-    paths:
-      - release.md
-    expire_in: 1 hour
-  before_script: |
-    apk add --no-cache bash curl git                                                  
-    chmod +x ./scripts/release-notes.sh
-  image: alpine:3.22.1
-  only:
-    - tags
-  script: |
-    echo "Listing project files..."
-    find . -type f
-    echo "Checking for CRLF endings..."
-    file ./scripts/release-notes.sh || true
-    cat -A ./scripts/release-notes.sh || true  # Show line endings
-
-    echo "Generating release notes for $DOCKER_HUB_USERNAME/$CI_PROJECT_NAME:$CI_COMMIT_TAG..."                                                                    >/dev/null
-    ./scripts/release-notes.sh > release.md
-    
-    echo "🧪 Validating release notes file..."
-
-    if [ ! -s release.md ]; then
-      echo "❌ release.md was not created or is empty!"
-      exit 1
-    else
-      echo "✅ release.md created successfully with contents:"
-      head -n 10 release.md  # Show first 10 lines
-    fi
-  stage: release
-
-update-release-badge:
-  stage: release
-  image: alpine:3.22.1
-  script: |
-    set -e
-    apk add --no-cache curl jq bash coreutils
-
-    echo "🔍 Checking current pipeline job statuses..."
-    JOB_STATUSES=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/pipelines/$CI_PIPELINE_ID/jobs" | jq -r '.[].status')
-
-    ALL_SUCCESS=true
-    ANY_FAILED=false
-    ANY_RUNNING=false
-
-    printf '%s\n' "$JOB_STATUSES" | while IFS= read -r status; do
-      case "$status" in
-        failed)
-          ANY_FAILED=true
-          ALL_SUCCESS=false
-          ;;
-        running|pending)
-          ANY_RUNNING=true
-          ALL_SUCCESS=false
-          ;;
-        success)
-          # all good
-          ;;
-        *)
-          ALL_SUCCESS=false
-          ;;
-      esac
-    done
-
-    if [ "$ALL_SUCCESS" = true ]; then
-      STATUS="passed"
-      COLOR="#4c1"
-    elif [ "$ANY_FAILED" = true ]; then
-      STATUS="failed"
-      COLOR="#e05d44"
-    else
-      STATUS="running"
-      COLOR="#dfb317"
-    fi
-
-    PIPELINE_STATUS=$STATUS
-    echo "🏁 Current pipeline status summary: $PIPELINE_STATUS"
-    echo "🎨 Setting Badge Color: $COLOR"
-    echo "⌛ Generating badge SVG..."
-   
-    mkdir -p assets
-    sed -e "s|{{COLOR}}|$COLOR|g" \
-        -e "s|{{STATUS}}|$STATUS|g" \
-        assets/badge-release-generic.svg > assets/badge-release-status.svg
-
-    # Encode file as base64
-    CONTENT_BASE64=$(base64 -w 0 assets/badge-release-status.svg)
-
-    echo "🚀 Uploading badge to repository via GitLab API..."
-
-    FILE_PATH="assets/badge-release-status.svg"
-    ENCODED_FILE_PATH=$(echo "$FILE_PATH" | sed 's/\//%2F/g')
-
-    curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-      --header "Content-Type: application/json" \
-      --data "{
-        \"branch\": \"main\",
-        \"content\": \"$CONTENT_BASE64\",
-        \"commit_message\": \"Update release badge for $CI_COMMIT_TAG\",
-        \"encoding\": \"base64\"
-      }" \
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/files/$ENCODED_FILE_PATH"
-  artifacts:
-    paths:
-      - assets/badge-release-status.svg
-    expire_in: 1 hour
-  needs:
-    - job: create-release
-      artifacts: false
-  only:
-    - tags
+  image: "$SF_IMAGE"
+  needs: [build-image, security-scan, docs-refresh]
+  script:
+    - stagefreight release create
+  rules:
+    - if: $CI_COMMIT_TAG
